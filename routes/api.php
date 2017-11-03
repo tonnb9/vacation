@@ -13,11 +13,11 @@ use Illuminate\Http\Request;
 |
 */
 
-Route::resource('vacation', 'VacationRequestsController');
+
 Route::post('login', 'Auth\LoginController@login');
 Route::post('register', 'Auth\RegisterController@register');
 
 Route::group(['middleware' => 'auth:api'], function() {
     Route::post('logout', 'Auth\LoginController@logout');
-
+    Route::apiResource('vacation', 'VacationRequestsController');
 });

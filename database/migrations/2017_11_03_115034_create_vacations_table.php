@@ -19,7 +19,7 @@ class CreateVacationsTable extends Migration
             $table->date('to_date');
             $table->integer('user_id')->unsigned();
             $table->foreign('user_id')->references('id')->on('users');
-            $table->boolean('approved');
+            $table->boolean('approved')->default(0);
             $table->timestamps();
         });
     }

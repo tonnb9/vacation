@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\VacationRequest;
+use App\Vacation;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class VacationRequestsController extends Controller
 {
@@ -13,17 +16,16 @@ class VacationRequestsController extends Controller
      */
     public function index()
     {
-        return "success";
-    }
+        $vacation = new Vacation();
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
+        $user = Auth::guard('api')->user();
+        if($user->is_admin){
+            $result = $vacation->all();
+        }else{
+            $result = $user->vacation;
+        }
+
+        return response()->json($result, 200);
     }
 
     /**
@@ -32,9 +34,16 @@ class VacationRequestsController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(VacationRequest $request)
     {
-        //
+        $result = Vacation::create([
+            'from_date' => $request->from_date,
+            'to_date' => $request->to_date,
+            'user_id' => Auth::guard('api')->id(),
+            'approved' => 0
+        ]);
+
+        return response()->json($result, 201);
     }
 
     /**
@@ -49,26 +58,23 @@ class VacationRequestsController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
-    }
-
-    /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(VacationRequest $request, $id)
     {
-        //
+        $vacation = new Vacation();
+        $vacation = $vacation->find($id);
+        if($vacation->user_id == Auth::guard('api')->id()){
+            $vacation->from_date = $request->from_date;
+            $vacation->to_date = $request->to_date;
+            return response()->json($vacation, 200);
+        }else{
+            return response()->json(['error' => 'Unauthorized to perform this action'], 401);
+        }
     }
 
     /**
@@ -79,6 +85,12 @@ class VacationRequestsController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $vacation = new Vacation();
+        $vacation = $vacation->find($id);
+        if($vacation->user_id == Auth::guard('api')->id()){
+            $vacation->delete();
+            return response()->json(null, 204);
+        }
+        return response()->json(['error' => 'Unauthorized to perform this action'], 401);
     }
 }
