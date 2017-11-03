@@ -57,7 +57,7 @@ class VacationRequestsController extends Controller
 
         $user = new User();
         $user = $user->where('is_admin', 1);
-        
+
         Mail::send('emails.send', ['title' => $title, 'content' => $content], function ($message, $vacation, $user)
         {
             $message->from($vacation->user->email, $vacation->user->name);
