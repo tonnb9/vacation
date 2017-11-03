@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\VacationRequest;
+use App\User;
 use App\Vacation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -54,11 +55,14 @@ class VacationRequestsController extends Controller
         $title = 'Vacation request';
         $content = $this->view('emails.vacation')->with($vacation);
 
-        Mail::send('emails.send', ['title' => $title, 'content' => $content], function ($message, $vacation)
+        $user = new User();
+        $user = $user->where('is_admin', 1);
+        
+        Mail::send('emails.send', ['title' => $title, 'content' => $content], function ($message, $vacation, $user)
         {
             $message->from($vacation->user->email, $vacation->user->name);
 
-            $message->to('dritonnaserberisha@gmail.com');
+            $message->to($user->email);
 
         });
     }
