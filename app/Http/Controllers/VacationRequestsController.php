@@ -5,9 +5,10 @@ namespace App\Http\Controllers;
 use App\Http\Requests\VacationRequest;
 use App\User;
 use App\Vacation;
+use Mail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\View;
 
 class VacationRequestsController extends Controller
 {
@@ -45,27 +46,22 @@ class VacationRequestsController extends Controller
             'approved' => 0
         ]);
 
-        //TODO: create event.
-        $this->sendEmail($vacation);
+
+        //Send mail
+        $user = new User();
+        $user = $user->where('is_admin', 1)->first();
+
+        Mail::send('emails.vacation', ['vacation' => $vacation], function ($message) use ($vacation, $user)
+        {
+            $message->from($vacation->user->email, $vacation->user->name);
+
+            $message->to($user->email, $user->name)->subject('Vacation request');
+
+        });
 
         return response()->json($vacation, 201);
     }
 
-    public function sendEmail($vacation){
-        $title = 'Vacation request';
-        $content = $this->view('emails.vacation')->with($vacation);
-
-        $user = new User();
-        $user = $user->where('is_admin', 1);
-
-        Mail::send('emails.send', ['title' => $title, 'content' => $content], function ($message, $vacation, $user)
-        {
-            $message->from($vacation->user->email, $vacation->user->name);
-
-            $message->to($user->email);
-
-        });
-    }
     /**
      * Display the specified resource.
      *
