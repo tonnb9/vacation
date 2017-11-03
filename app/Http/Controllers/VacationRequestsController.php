@@ -6,6 +6,7 @@ use App\Http\Requests\VacationRequest;
 use App\Vacation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 
 class VacationRequestsController extends Controller
 {
@@ -36,16 +37,31 @@ class VacationRequestsController extends Controller
      */
     public function store(VacationRequest $request)
     {
-        $result = Vacation::create([
+        $vacation = Vacation::create([
             'from_date' => $request->from_date,
             'to_date' => $request->to_date,
             'user_id' => Auth::guard('api')->id(),
             'approved' => 0
         ]);
 
-        return response()->json($result, 201);
+        //TODO: create event.
+        $this->sendEmail($vacation);
+
+        return response()->json($vacation, 201);
     }
 
+    public function sendEmail($vacation){
+        $title = 'Vacation request';
+        $content = $this->view('emails.vacation')->with($vacation);
+
+        Mail::send('emails.send', ['title' => $title, 'content' => $content], function ($message, $vacation)
+        {
+            $message->from($vacation->user->email, $vacation->user->name);
+
+            $message->to('dritonnaserberisha@gmail.com');
+
+        });
+    }
     /**
      * Display the specified resource.
      *
