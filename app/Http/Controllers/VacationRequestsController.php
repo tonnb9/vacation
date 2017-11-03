@@ -71,6 +71,7 @@ class VacationRequestsController extends Controller
         if($vacation->user_id == Auth::guard('api')->id()){
             $vacation->from_date = $request->from_date;
             $vacation->to_date = $request->to_date;
+            $vacation->save();
             return response()->json($vacation, 200);
         }else{
             return response()->json(['error' => 'Unauthorized to perform this action'], 401);
@@ -89,6 +90,18 @@ class VacationRequestsController extends Controller
         $vacation = $vacation->find($id);
         if($vacation->user_id == Auth::guard('api')->id()){
             $vacation->delete();
+            return response()->json(null, 204);
+        }
+        return response()->json(['error' => 'Unauthorized to perform this action'], 401);
+    }
+
+    public function approveVacation($id){
+        $user = Auth::guard('api')->user();
+        if($user->is_admin){
+            $vacation = new Vacation();
+            $vacation = $vacation->find($id);
+            $vacation->approved = 1;
+            $vacation->save();
             return response()->json(null, 204);
         }
         return response()->json(['error' => 'Unauthorized to perform this action'], 401);
