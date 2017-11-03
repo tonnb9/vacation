@@ -15,6 +15,7 @@ class UsersTableSeeder extends Seeder
             'name' => 'Driton Berisha',
             'email' => 'dritonnaserberisha@gmail.com',
             'password' => bcrypt('123456'),
+            'is_admin' => '1',
         ]);
     }
 }
